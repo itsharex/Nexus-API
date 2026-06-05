@@ -57,24 +57,33 @@ function EmptyAboutState() {
         </div>
         <div className='space-y-4 text-sm'>
           <p>
-            {t('New API Project Repository:')}{' '}
+            {t('Nexus-API Project Repository:')}{' '}
             <a
-              href='https://github.com/QuantumNous/new-api'
+              href='https://github.com/CNYT8/Nexus-API'
               target='_blank'
               rel='noopener noreferrer'
               className='text-primary hover:underline'
             >
-              {t('https://github.com/QuantumNous/new-api')}
+              {t('https://github.com/CNYT8/Nexus-API')}
             </a>
           </p>
           <p className='text-muted-foreground'>
             <a
+              href='https://github.com/CNYT8/Nexus-API'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='text-primary hover:underline'
+            >
+              {t('Nexus-API')}
+            </a>{' '}
+            {t('is a modified downstream project based on')}{' '}
+            <a
               href='https://github.com/QuantumNous/new-api'
               target='_blank'
               rel='noopener noreferrer'
               className='text-primary hover:underline'
             >
-              {t('NewAPI')}
+              {t('New API')}
             </a>{' '}
             © {currentYear}{' '}
             <a

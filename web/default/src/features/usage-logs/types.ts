@@ -99,6 +99,11 @@ export interface LogOtherData {
     use_channel?: number[]
     local_count_tokens?: boolean
     channel_affinity?: ChannelAffinityInfo
+    is_model_mapped?: boolean
+    upstream_model_name?: string
+    original_model?: string
+    original_model_name?: string
+    upstream_model?: string
     // Top-up audit fields (type=1, admin only)
     payment_method?: string
     callback_payment_method?: string

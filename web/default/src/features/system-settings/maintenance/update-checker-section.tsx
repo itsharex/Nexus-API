@@ -16,11 +16,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ExternalLinkIcon, RefreshCcwIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { formatTimestamp, formatTimestampToDate } from '@/lib/format'
+import {
+  fetchLatestRelease,
+  NEW_API_LATEST_RELEASE_API,
+  NEW_API_RELEASES_URL,
+  NEXUS_API_LATEST_RELEASE_API,
+  NEXUS_API_RELEASES_URL,
+  type ReleaseInfo,
+} from '@/lib/nexus-version'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -32,14 +40,6 @@ import {
 } from '@/components/ui/dialog'
 import { Markdown } from '@/components/ui/markdown'
 import { SettingsSection } from '../components/settings-section'
-
-type ReleaseInfo = {
-  tag_name: string
-  name?: string
-  body?: string
-  html_url?: string
-  published_at?: string
-}
 
 type UpdateCheckerSectionProps = {
   currentVersion?: string | null
@@ -54,31 +54,25 @@ export function UpdateCheckerSection({
   const [checking, setChecking] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [release, setRelease] = useState<ReleaseInfo | null>(null)
+  const [latestNewApiRelease, setLatestNewApiRelease] =
+    useState<ReleaseInfo | null>(null)
 
   const uptime = startTime ? formatTimestamp(startTime) : t('Unknown')
   const version = currentVersion || t('Unknown')
 
+  useEffect(() => {
+    fetchLatestRelease(NEW_API_LATEST_RELEASE_API)
+      .then(setLatestNewApiRelease)
+      .catch(() => setLatestNewApiRelease(null))
+  }, [])
+
   const handleCheckUpdates = async () => {
     setChecking(true)
     try {
-      const response = await fetch(
-        'https://api.github.com/repos/Calcium-Ion/new-api/releases/latest',
-        {
-          headers: {
-            Accept: 'application/vnd.github+json',
-            'User-Agent': 'new-api-dashboard',
-          },
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error(t('Failed to contact GitHub releases API'))
-      }
-
-      const data = (await response.json()) as ReleaseInfo
-      if (!data?.tag_name) {
-        throw new Error(t('Unexpected release payload'))
-      }
+      const data = await fetchLatestRelease(NEXUS_API_LATEST_RELEASE_API)
+      fetchLatestRelease(NEW_API_LATEST_RELEASE_API)
+        .then(setLatestNewApiRelease)
+        .catch(() => setLatestNewApiRelease(null))
 
       if (currentVersion && data.tag_name === currentVersion) {
         toast.success(
@@ -91,21 +85,19 @@ export function UpdateCheckerSection({
 
       setRelease(data)
       setDialogOpen(true)
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : t('Failed to check for updates')
-      toast.error(message)
+    } catch {
+      toast.error(t('Failed to check for updates'))
     } finally {
       setChecking(false)
     }
   }
 
   const goToRelease = () => {
-    if (release?.html_url) {
-      window.open(release.html_url, '_blank', 'noopener,noreferrer')
-    }
+    window.open(
+      release?.html_url ?? NEXUS_API_RELEASES_URL,
+      '_blank',
+      'noopener,noreferrer'
+    )
   }
 
   return (
@@ -115,9 +107,22 @@ export function UpdateCheckerSection({
           <div className='grid gap-4 md:grid-cols-2'>
             <div className='rounded-lg border p-4'>
               <div className='text-muted-foreground text-sm'>
-                {t('Current version')}
+                {t('Current Nexus-API Version')}
               </div>
               <div className='text-lg font-semibold'>{version}</div>
+            </div>
+            <div className='rounded-lg border p-4'>
+              <div className='text-muted-foreground text-sm'>
+                {t('Latest Original new-api Version')}
+              </div>
+              <a
+                href={latestNewApiRelease?.html_url ?? NEW_API_RELEASES_URL}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='text-lg font-semibold hover:underline'
+              >
+                {latestNewApiRelease?.tag_name ?? t('Unknown')}
+              </a>
             </div>
             <div className='rounded-lg border p-4'>
               <div className='text-muted-foreground text-sm'>

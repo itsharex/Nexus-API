@@ -36,6 +36,12 @@ import Text from '@douyinfe/semi-ui/lib/es/typography/text';
 
 const LEGAL_USER_AGREEMENT_KEY = 'legal.user_agreement';
 const LEGAL_PRIVACY_POLICY_KEY = 'legal.privacy_policy';
+const NEXUS_API_RELEASES_URL = 'https://github.com/CNYT8/Nexus-API/releases';
+const NEXUS_API_LATEST_RELEASE_API =
+  'https://api.github.com/repos/CNYT8/Nexus-API/releases/latest';
+const NEW_API_RELEASES_URL = 'https://github.com/QuantumNous/new-api/releases';
+const NEW_API_LATEST_RELEASE_API =
+  'https://api.github.com/repos/QuantumNous/new-api/releases/latest';
 
 const OtherSetting = () => {
   const { t } = useTranslation();
@@ -52,10 +58,39 @@ const OtherSetting = () => {
   let [loading, setLoading] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [statusState, statusDispatch] = useContext(StatusContext);
+  const [latestNewApiRelease, setLatestNewApiRelease] = useState({
+    tag_name: '',
+    html_url: '',
+  });
+  const [versionLoading, setVersionLoading] = useState(true);
   const [updateData, setUpdateData] = useState({
     tag_name: '',
     content: '',
+    html_url: '',
   });
+
+  const fetchLatestRelease = async (apiUrl) => {
+    const response = await fetch(apiUrl, {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        'User-Agent': 'nexus-api-dashboard',
+      },
+    });
+
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data?.tag_name ? data : null;
+  };
+
+  const fetchVersionInfo = async () => {
+    try {
+      setVersionLoading(true);
+      const newApiRelease = await fetchLatestRelease(NEW_API_LATEST_RELEASE_API);
+      setLatestNewApiRelease(newApiRelease || { tag_name: '', html_url: '' });
+    } finally {
+      setVersionLoading(false);
+    }
+  };
 
   const updateOption = async (key, value) => {
     setLoading(true);
@@ -235,37 +270,19 @@ const OtherSetting = () => {
         ...loadingInput,
         CheckUpdate: true,
       }));
-      // Use a CORS proxy to avoid direct cross-origin requests to GitHub API
-      // Option 1: Use a public CORS proxy service
-      // const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-      // const res = await API.get(
-      //   `${proxyUrl}https://api.github.com/repos/Calcium-Ion/new-api/releases/latest`,
-      // );
+      const nexusRelease = await fetchLatestRelease(NEXUS_API_LATEST_RELEASE_API);
 
-      // Option 2: Use the JSON proxy approach which often works better with GitHub API
-      const res = await fetch(
-        'https://api.github.com/repos/Calcium-Ion/new-api/releases/latest',
-        {
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            // Adding User-Agent which is often required by GitHub API
-            'User-Agent': 'new-api-update-checker',
-          },
-        },
-      ).then((response) => response.json());
+      if (!nexusRelease?.tag_name) {
+        throw new Error('Unexpected release payload');
+      }
 
-      // Option 3: Use a local proxy endpoint
-      // Create a cached version of the response to avoid frequent GitHub API calls
-      // const res = await API.get('/api/status/github-latest-release');
-
-      const { tag_name, body } = res;
-      if (tag_name === statusState?.status?.version) {
-        showSuccess(`已是最新版本：${tag_name}`);
+      if (nexusRelease.tag_name === statusState?.status?.version) {
+        showSuccess(`${t('已是最新版本')}：${nexusRelease.tag_name}`);
       } else {
         setUpdateData({
-          tag_name: tag_name,
-          content: marked.parse(body),
+          tag_name: nexusRelease.tag_name,
+          content: marked.parse(nexusRelease.body || t('暂无更新说明')),
+          html_url: nexusRelease.html_url || NEXUS_API_RELEASES_URL,
         });
         setShowUpdateModal(true);
       }
@@ -338,14 +355,11 @@ const OtherSetting = () => {
 
   useEffect(() => {
     getOptions();
+    fetchVersionInfo();
   }, []);
 
-  // Function to open GitHub release page
   const openGitHubRelease = () => {
-    window.open(
-      `https://github.com/Calcium-Ion/new-api/releases/tag/${updateData.tag_name}`,
-      '_blank',
-    );
+    window.open(updateData.html_url || NEXUS_API_RELEASES_URL, '_blank');
   };
 
   const getStartTimeString = () => {
@@ -370,24 +384,42 @@ const OtherSetting = () => {
             <Form.Section text={t('系统信息')}>
               <Row>
                 <Col span={16}>
-                  <Space>
+                  <Space vertical align='start'>
                     <Text>
-                      {t('当前版本')}：
+                      {t('当前 Nexus-API 版本')}：
                       {statusState?.status?.version || t('未知')}
                     </Text>
-                    <Button
-                      type='primary'
-                      onClick={checkUpdate}
-                      loading={loadingInput['CheckUpdate']}
-                    >
-                      {t('检查更新')}
-                    </Button>
-                    <Button
-                      onClick={switchToDefaultFrontend}
-                      loading={loadingInput['FrontendTheme']}
-                    >
-                      {t('切换到新版前端')}
-                    </Button>
+                    <Text>
+                      {t('原版 new-api 最新版本')}：
+                      {versionLoading ? (
+                        t('加载中')
+                      ) : latestNewApiRelease?.html_url ? (
+                        <a
+                          href={latestNewApiRelease.html_url}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                        >
+                          {latestNewApiRelease.tag_name || t('未知')}
+                        </a>
+                      ) : (
+                        latestNewApiRelease.tag_name || t('未知')
+                      )}
+                    </Text>
+                    <Space>
+                      <Button
+                        type='primary'
+                        onClick={checkUpdate}
+                        loading={loadingInput['CheckUpdate']}
+                      >
+                        {t('检查更新')}
+                      </Button>
+                      <Button
+                        onClick={switchToDefaultFrontend}
+                        loading={loadingInput['FrontendTheme']}
+                      >
+                        {t('切换到新版前端')}
+                      </Button>
+                    </Space>
                   </Space>
                 </Col>
               </Row>

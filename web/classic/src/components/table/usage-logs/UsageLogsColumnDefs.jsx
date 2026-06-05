@@ -269,12 +269,20 @@ function renderBillingTag(record, t) {
   return null;
 }
 
-function renderModelName(record, copyText, t) {
+function renderModelName(record, copyText, t, isAdminUser) {
   let other = getLogOther(record.other);
+  let adminInfo = other?.admin_info;
+  let upstreamModelName =
+    adminInfo?.upstream_model_name ||
+    adminInfo?.original_model_name ||
+    adminInfo?.original_model ||
+    adminInfo?.upstream_model ||
+    other?.upstream_model_name;
   let modelMapped =
-    other?.is_model_mapped &&
-    other?.upstream_model_name &&
-    other?.upstream_model_name !== '';
+    isAdminUser &&
+    (adminInfo?.is_model_mapped || other?.is_model_mapped) &&
+    upstreamModelName &&
+    upstreamModelName !== '';
   if (!modelMapped) {
     return renderModelTag(record.model_name, {
       onClick: (event) => {
@@ -303,11 +311,9 @@ function renderModelName(record, copyText, t) {
                     <Typography.Text strong style={{ marginRight: 8 }}>
                       {t('实际模型')}:
                     </Typography.Text>
-                    {renderModelTag(other.upstream_model_name, {
+                    {renderModelTag(upstreamModelName, {
                       onClick: (event) => {
-                        copyText(event, other.upstream_model_name).then(
-                          (r) => {},
-                        );
+                        copyText(event, upstreamModelName).then((r) => {});
                       },
                     })}
                   </div>
@@ -688,7 +694,7 @@ export const getLogsColumns = ({
           record.type === 2 ||
           record.type === 5 ||
           record.type === 6 ? (
-          <>{renderModelName(record, copyText, t)}</>
+          <>{renderModelName(record, copyText, t, isAdminUser)}</>
         ) : (
           <></>
         );

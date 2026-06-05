@@ -448,10 +448,18 @@ export const useLogsData = () => {
         }
       }
       if (logs[i].type === 2) {
+        const adminInfo = other?.admin_info;
+        const upstreamModelName =
+          adminInfo?.upstream_model_name ||
+          adminInfo?.original_model_name ||
+          adminInfo?.original_model ||
+          adminInfo?.upstream_model ||
+          other?.upstream_model_name;
         let modelMapped =
-          other?.is_model_mapped &&
-          other?.upstream_model_name &&
-          other?.upstream_model_name !== '';
+          isAdminUser &&
+          (adminInfo?.is_model_mapped || other?.is_model_mapped) &&
+          upstreamModelName &&
+          upstreamModelName !== '';
         if (modelMapped) {
           expandDataLocal.push({
             key: t('请求并计费模型'),
@@ -459,7 +467,7 @@ export const useLogsData = () => {
           });
           expandDataLocal.push({
             key: t('实际模型'),
-            value: other.upstream_model_name,
+            value: upstreamModelName,
           });
         }
 

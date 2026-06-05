@@ -421,6 +421,18 @@ export function DetailsDialog(props: DetailsDialogProps) {
   const showAdminIp =
     !!props.log.ip && (showTiming || (props.isAdmin && isTopup))
   const adminInfo = other?.admin_info
+  const upstreamModel =
+    adminInfo?.upstream_model_name ||
+    adminInfo?.original_model_name ||
+    adminInfo?.original_model ||
+    adminInfo?.upstream_model ||
+    other?.upstream_model_name
+  const isModelMapped = !!(
+    props.isAdmin &&
+    (adminInfo?.is_model_mapped || other?.is_model_mapped) &&
+    upstreamModel &&
+    upstreamModel !== ''
+  )
   const topupAuditFields =
     isTopup && props.isAdmin && adminInfo
       ? ([
@@ -829,8 +841,7 @@ export function DetailsDialog(props: DetailsDialogProps) {
               />
             )}
 
-            {/* Model mapping */}
-            {other?.is_model_mapped && other?.upstream_model_name && (
+            {isModelMapped && (
               <DetailSection label={t('Model Mapping')}>
                 <DetailRow
                   label={t('Request Model')}
@@ -839,7 +850,7 @@ export function DetailsDialog(props: DetailsDialogProps) {
                 />
                 <DetailRow
                   label={t('Actual Model')}
-                  value={other.upstream_model_name}
+                  value={upstreamModel}
                   mono
                 />
               </DetailSection>

@@ -62,61 +62,44 @@ const About = () => {
   const customDescription = (
     <div style={{ textAlign: 'center' }}>
       <p>{t('可在设置页面设置关于内容，支持 HTML & Markdown')}</p>
-      {t('New API项目仓库地址：')}
+      {t('Nexus-API项目仓库地址：')}
       <a
-        href='https://github.com/QuantumNous/new-api'
+        href='https://github.com/CNYT8/Nexus-API'
         target='_blank'
         rel='noopener noreferrer'
         className='!text-semi-color-primary'
       >
-        https://github.com/QuantumNous/new-api
+        https://github.com/CNYT8/Nexus-API
       </a>
       <p>
+        <a
+          href='https://github.com/CNYT8/Nexus-API'
+          target='_blank'
+          rel='noopener noreferrer'
+          className='!text-semi-color-primary'
+        >
+          Nexus-API
+        </a>{' '}
+        {t('是基于')}{' '}
         <a
           href='https://github.com/QuantumNous/new-api'
           target='_blank'
           rel='noopener noreferrer'
           className='!text-semi-color-primary'
         >
-          NewAPI
+          New API
         </a>{' '}
-        {t('© {{currentYear}}', { currentYear })}{' '}
-        <a
-          href='https://github.com/QuantumNous'
-          target='_blank'
-          rel='noopener noreferrer'
-          className='!text-semi-color-primary'
-        >
-          QuantumNous
-        </a>{' '}
-        {t('| 基于')}{' '}
-        <a
-          href='https://github.com/songquanpeng/one-api/releases/tag/v0.5.4'
-          target='_blank'
-          rel='noopener noreferrer'
-          className='!text-semi-color-primary'
-        >
-          One API v0.5.4
-        </a>{' '}
-        © 2023{' '}
-        <a
-          href='https://github.com/songquanpeng'
-          target='_blank'
-          rel='noopener noreferrer'
-          className='!text-semi-color-primary'
-        >
-          JustSong
-        </a>
+        {t('的下游修改项目。')}
       </p>
       <p>
         {t('本项目根据')}
         <a
-          href='https://github.com/songquanpeng/one-api/blob/v0.5.4/LICENSE'
+          href='https://github.com/QuantumNous/new-api'
           target='_blank'
           rel='noopener noreferrer'
           className='!text-semi-color-primary'
         >
-          {t('MIT许可证')}
+          New API
         </a>
         {t('授权，需在遵守')}
         <a
